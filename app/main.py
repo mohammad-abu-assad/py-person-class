@@ -8,18 +8,25 @@ class Person:
 
 
 def create_person_list(people: list) -> list:
-    person_list = []
-    for pdata in people:
-        person = Person(pdata["name"], pdata["age"])
-        person_list.append(person)
+    # optional but recommended to avoid stale state in repeated calls/tests
+    Person.people = {}
 
-    for pdata in people:
-        person = Person.people[pdata["name"]]
+    # Build all Person instances (list comprehension, preserves order)
+    person_list = [
+        Person(person_dict["name"], person_dict["age"])
+        for person_dict in people
+    ]
 
-        if "wife" in pdata and pdata["wife"] is not None:
-            person.wife = Person.people[pdata["wife"]]
+    # Wire spouse references using dict.get
+    for person_dict in people:
+        person = Person.people[person_dict["name"]]
 
-        if "husband" in pdata and pdata["husband"] is not None:
-            person.husband = Person.people[pdata["husband"]]
+        wife_name = person_dict.get("wife")
+        if wife_name is not None:
+            person.wife = Person.people[wife_name]
+
+        husband_name = person_dict.get("husband")
+        if husband_name is not None:
+            person.husband = Person.people[husband_name]
 
     return person_list
